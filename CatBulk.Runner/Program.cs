@@ -70,7 +70,7 @@ namespace CatBulk.Runner
         private static void CheckCsvFile(string csvFile)
         {
             FileInfo fi = new FileInfo(csvFile);
-            if (!fi.Exists) throw new BulkFileException("FILE NOT FOUND EXCEPTION. THE WORLD GONNA EXPLODE ! :O ");
+            if (!fi.Exists) throw new BulkFileException(GlobalAppConstants.Messages.File.NotFound);
 
             Console.WriteLine($"File {fi.FullName} found.");
 
@@ -83,7 +83,7 @@ namespace CatBulk.Runner
 
             bool isDimensionCorrect = oneLine.Split(',').Length.Equals(8);
 
-            if (!isDimensionCorrect) throw new BulkFileException("WRONG FILE FORMAT EXCEPTION. THE WORLD GONNA EXPLODE ! :O ");
+            if (!isDimensionCorrect) throw new BulkFileException(GlobalAppConstants.Messages.File.WrongFormat);
         }
 
         static void EnsureDatabase(string masterConn)
