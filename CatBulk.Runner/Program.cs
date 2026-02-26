@@ -10,26 +10,39 @@ namespace CatBulk.Runner
     {
         static void Main(string[] args)
         {
+            #region Setup
             string masterConn = @"Server=(localdb)\MSSQLLocalDB;Integrated Security=true;";
             string connString = @"Server=(localdb)\MSSQLLocalDB;Integrated Security=true;Initial Catalog=CatBulkDb;Pooling=true;Connect Timeout=30;";
 
 
-            int nbCats = 10000;
+            int nbCats = 1_000_000;
 
             Console.WriteLine("=== Cat Bulk POC ===");
 
             EnsureDatabase(masterConn);
             EnsureTable(connString);
             TruncateTable(connString);
+            #endregion
 
-            Console.WriteLine(">>> Generating CSV");
-            string csvFile = "cats.csv";
-            WriteCsv(csvFile, nbCats);
-            CheckCsvFile(csvFile);
+            EncapsulateCSVDemo(nbCats);
 
-            Console.WriteLine(">>> Running BCP CSV");
-            RunBcpCsv(csvFile);
+            EncapsulateBcpDemo(connString);
 
+            TruncateTable(connString);
+
+            EncapsulateSbcDemo(connString, nbCats);
+
+            Console.WriteLine("=== SUCCESS. You may now commit and enjoy your evening. ===");
+        }
+
+        private static void EncapsulateSbcDemo(string connString, int nbCats)
+        {
+            Console.WriteLine(">>> Running SqlBulkCopy");
+            RunSqlBulkCopy(connString, nbCats);
+        }
+
+        private static void EncapsulateBcpDemo(string connString)
+        {
             string nativeFile = "cats_native.dat";
 
             Console.WriteLine(">>> Running BCP OUT Native (-n)");
@@ -41,13 +54,17 @@ namespace CatBulk.Runner
 
             Console.WriteLine(">>> Running BCP IN Native (-n)");
             RunBcpNative(nativeFile);
+        }
 
-            TruncateTable(connString);
+        private static void EncapsulateCSVDemo(int nbCats)
+        {
+            Console.WriteLine(">>> Generating CSV");
+            string csvFile = "cats.csv";
+            WriteCsv(csvFile, nbCats);
+            CheckCsvFile(csvFile);
 
-            Console.WriteLine(">>> Running SqlBulkCopy");
-            RunSqlBulkCopy(connString, nbCats);
-
-            Console.WriteLine("=== SUCCESS. You may now commit and enjoy your evening. ===");
+            Console.WriteLine(">>> Running BCP CSV");
+            RunBcpCsv(csvFile);
         }
 
         private static void CheckCsvFile(string csvFile)
