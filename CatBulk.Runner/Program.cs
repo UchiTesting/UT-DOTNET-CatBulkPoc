@@ -48,7 +48,7 @@ namespace CatBulk.Runner
             Console.WriteLine(">>> Running BCP OUT Native (-n)");
             GenerateBcpNative(nativeFile);
 
-            if (!File.Exists(nativeFile)) throw new Exception("BCP Out file missing");
+            if (!File.Exists(nativeFile)) throw new BulkFileException("BCP Out file missing");
 
             TruncateTable(connString);
 
@@ -70,7 +70,7 @@ namespace CatBulk.Runner
         private static void CheckCsvFile(string csvFile)
         {
             FileInfo fi = new FileInfo(csvFile);
-            if (!fi.Exists) throw new Exception("FILE NOT FOUND EXCEPTION. THE WORLD GONNA EXPLODE ! :O ");
+            if (!fi.Exists) throw new BulkFileException("FILE NOT FOUND EXCEPTION. THE WORLD GONNA EXPLODE ! :O ");
 
             Console.WriteLine($"File {fi.FullName} found.");
 
@@ -83,7 +83,7 @@ namespace CatBulk.Runner
 
             bool isDimensionCorrect = oneLine.Split(',').Length.Equals(8);
 
-            if (!isDimensionCorrect) throw new Exception("WRONG FILE FORMAT EXCEPTION. THE WORLD GONNA EXPLODE ! :O ");
+            if (!isDimensionCorrect) throw new BulkFileException("WRONG FILE FORMAT EXCEPTION. THE WORLD GONNA EXPLODE ! :O ");
         }
 
         static void EnsureDatabase(string masterConn)

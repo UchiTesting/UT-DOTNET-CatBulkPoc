@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BulkFileException.cs" />
     <Compile Include="Cat.cs" />
     <Compile Include="CatBulkCopier.cs" />
     <Compile Include="CatGenerator.cs" />
