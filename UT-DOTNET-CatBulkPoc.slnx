@@ -1,2 +1,4 @@
 <Solution>
+  <Project Path="CatBulk.Domain/CatBulk.Domain.csproj" Id="cc94fb97-7bbe-4193-ae35-431735bbc8e9" />
+  <Project Path="E:/Users/djjax/Desktop/repos/C#/UT-DOTNET-CatBulkPoc/CatBulk.Runner/CatBulk.Runner.csproj" Id="ccb6a7f7-6af9-48ec-b0ee-8f8ef4203464" />
 </Solution>
