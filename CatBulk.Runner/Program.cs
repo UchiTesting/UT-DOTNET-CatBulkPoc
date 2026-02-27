@@ -276,7 +276,7 @@ CREATE TABLE dbo.Cat
                 return default(T);
 
             // Build pattern to match: /paramName, -paramName, /paramName=value, -paramName="value", etc.
-            string pattern = @"[-/]{1,2}(?<paramName>" + Regex.Escape(parameterName) + @")(=?['""]?(?<paramValue>[^\s'""=]+)['""]?)?\s?";
+            string pattern = @"[-/]{1,2}(?<paramName>" + Regex.Escape(parameterName) + @")(=?['""]?(?<paramValue>[^'""]+)['""]?)?\s?";
             var paramRegex = new Regex(pattern, RegexOptions.IgnoreCase);
 
             var match = paramRegex.Match(argumentLine);
