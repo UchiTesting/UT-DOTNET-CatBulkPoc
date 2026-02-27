@@ -2,6 +2,7 @@
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
+using System.Text.RegularExpressions;
 using CatBulk.Domain;
 
 namespace CatBulk.Runner
@@ -10,13 +11,33 @@ namespace CatBulk.Runner
     {
         static void Main(string[] args)
         {
+            // deal with params here and setup options
+
             #region Setup
-            string masterConn = @"Server=(localdb)\MSSQLLocalDB;Integrated Security=true;";
-            string connString = @"Server=(localdb)\MSSQLLocalDB;Integrated Security=true;Initial Catalog=CatBulkDb;Pooling=true;Connect Timeout=30;";
 
+            int x = CheckForParameter<int>("num-cats", args);
 
-            int nbCats = 1_000_000;
+            if (x != default(int))
+                GlobalAppParams.NumberOfCatsToGenerate = x;
 
+            string y = CheckForParameter<string>("master-cnx-str", args);
+            if (!string.IsNullOrEmpty(y))
+                GlobalAppParams.MasterConnectionString = y;
+            
+            string z = CheckForParameter<string>("ops-cnx-str", args);
+            if(!string.IsNullOrEmpty(y))
+                GlobalAppParams.OperationalConnectionString = z;
+            
+            Console.WriteLine($"Current number of cats to generate: {GlobalAppParams.NumberOfCatsToGenerate}");
+            Console.WriteLine($"Current mst cnx string: {GlobalAppParams.MasterConnectionString}");
+            Console.WriteLine($"Current ops cnx string: {GlobalAppParams.OperationalConnectionString}");
+            
+            string masterConn = GlobalAppParams.MasterConnectionString;
+            string connString = GlobalAppParams.OperationalConnectionString;
+            int nbCats = GlobalAppParams.NumberOfCatsToGenerate;
+            #endregion
+
+            #region Preparation
             Console.WriteLine("=== Cat Bulk POC ===");
 
             EnsureDatabase(masterConn);
@@ -232,6 +253,67 @@ CREATE TABLE dbo.Cat
                     }
                 }
             }
+        }
+
+        // PSEUDOCODE / PLAN:
+        // 1. Build a regex that matches a parameter name (provided in parameterName) optionally followed by =value
+        // 2. Use named groups "paramName" and "paramValue" so we can locate the captured value easily.
+        // 3. If the parameter is present:
+        //    a. If a value was captured, convert it to T using Convert.ChangeType and return the casted T.
+        //    b. If no value captured and T is bool, return true (treat as switch present).
+        //    c. Otherwise return default(T).
+        // 4. If the parameter is not present return default(T).
+        //
+        // Implementation notes:
+        // - Use Regex.Escape(parameterName) so special characters in parameterName are matched literally.
+        // - Use Group.Value to obtain the captured string; do not pass a Group object to Convert.ChangeType.
+        // - Use typeof(T) for the Convert.ChangeType target Type and cast the resulting object to T.
+        // - Return default(T) instead of null to handle value types.
+
+        static T CheckForParameter<T>(string parameterName, string argumentLine)
+        {
+            if (string.IsNullOrEmpty(parameterName) || string.IsNullOrEmpty(argumentLine))
+                return default(T);
+
+            // Build pattern to match: /paramName, -paramName, /paramName=value, -paramName="value", etc.
+            string pattern = @"[-/]{1,2}(?<paramName>" + Regex.Escape(parameterName) + @")(=?['""]?(?<paramValue>[^\s'""=]+)['""]?)?\s?";
+            var paramRegex = new Regex(pattern, RegexOptions.IgnoreCase);
+
+            var match = paramRegex.Match(argumentLine);
+
+            if (!match.Success)
+                return default(T);
+
+            var valueGroup = match.Groups["paramValue"];
+
+            // If no explicit value provided and T is bool, treat presence as true
+            if (!valueGroup.Success || string.IsNullOrEmpty(valueGroup.Value))
+            {
+                if (typeof(T) == typeof(bool))
+                    return (T)(object)true;
+
+                return default(T);
+            }
+
+            // Convert the captured string value to the requested type T and return it
+            try
+            {
+                object converted = Convert.ChangeType(valueGroup.Value, typeof(T));
+                return (T)converted;
+            }
+            catch
+            {
+                // Conversion failed -> return default(T)
+                return default(T);
+            }
+        }
+
+        static T CheckForParameter<T>(string parameterName, string[] argumentsArray)
+        {
+            // Linearize parameters
+            string argumentLine = string.Join(" ", argumentsArray);
+            var x = CheckForParameter<T>(parameterName, argumentLine);
+            return x;
         }
     }
 }

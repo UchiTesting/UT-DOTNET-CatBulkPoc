@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CatBulk.Runner
+﻿namespace CatBulk.Runner
 {
     internal static class GlobalAppConstants
     {
+        internal static class Infrastructure
+        {
+            public const string DefaultMasterConnectionString = "Server=(localdb)\\MSSQLLocalDB;Integrated Security=true;";
+            public const string DefaultOperationalConnectionString = "Server=(localdb)\\MSSQLLocalDB;Integrated Security=true;Initial Catalog=CatBulkDb;Pooling=true;Connect Timeout=30;";
+        }
         internal static class Messages
         {
             internal static class File
